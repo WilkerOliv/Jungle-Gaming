@@ -11,7 +11,7 @@ docker compose up --build -d
 docker compose ps
 ```
 
-A API fica em `http://localhost:3000`. A fila de mensagens fica no LocalStack em `http://localhost:4566`. O PostgreSQL fica acessível no computador em `localhost:5432`.
+A API fica em `http://localhost:3000`. A fila de mensagens fica no LocalStack em `http://localhost:4567`. O PostgreSQL fica acessível no computador em `localhost:5433`.
 
 ### Acesso ao PostgreSQL
 
@@ -20,7 +20,7 @@ As credenciais locais, já configuradas no arquivo `.env`, são:
 | Campo | Valor |
 | --- | --- |
 | Host | `localhost` |
-| Porta | `5432` |
+| Porta | `5433` |
 | Banco da aplicação | `jungle` |
 | Banco de testes | `jungle_test` |
 | Usuário da aplicação | `jungle_app` |
@@ -29,7 +29,7 @@ As credenciais locais, já configuradas no arquivo `.env`, são:
 Também é possível conectar com `psql`:
 
 ```sh
-psql 'postgres://jungle_app:jungle_app_local_2026@localhost:5432/jungle'
+psql 'postgres://jungle_app:jungle_app_local_2026@localhost:5433/jungle'
 ```
 
 O usuário da aplicação não é superusuário. A conta administrativa local é `postgres`, com senha `jungle_admin_local_2026`; use-a apenas para manutenção. Essas credenciais são somente para desenvolvimento. Para trocá-las, edite `.env` e recrie o volume PostgreSQL, pois o container só aplica os valores de inicialização na primeira criação do banco.

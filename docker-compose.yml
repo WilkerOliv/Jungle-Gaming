@@ -22,11 +22,11 @@ services:
       SERVICES: sqs
       AWS_DEFAULT_REGION: us-east-1
       PERSISTENCE: "1"
-    ports: ["127.0.0.1:4566:4566"]
+    ports: ["127.0.0.1:${LOCALSTACK_PORT:-4566}:4566"]
     healthcheck:
-      test: ["CMD-SHELL", "awslocal sqs list-queues --region us-east-1 | grep -q wager-transactions.fifo && awslocal sqs list-queues --region us-east-1 | grep -q wager-events.fifo"]
-      interval: 2s
-      timeout: 5s
+      test: ["CMD-SHELL", "awslocal sqs list-queues --region us-east-1 > /tmp/sqs-queues && grep -q wager-transactions.fifo /tmp/sqs-queues && grep -q wager-events.fifo /tmp/sqs-queues"]
+      interval: 5s
+      timeout: 20s
       retries: 30
       start_period: 10s
     volumes:
