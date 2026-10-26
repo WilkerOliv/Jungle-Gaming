@@ -1,0 +1,56 @@
+{
+  "name": "jungle-gaming-wagering-processor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Distributed financial transaction processor for wagering providers",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main.js",
+    "migration:run": "bun node_modules/typeorm/cli.js migration:run -d dist/infrastructure/persistence/data-source.js",
+    "migration:revert": "bun node_modules/typeorm/cli.js migration:revert -d dist/infrastructure/persistence/data-source.js",
+    "migration:generate": "bun node_modules/typeorm/cli.js migration:generate -d src/infrastructure/persistence/data-source.ts",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:integration": "jest --config ./test/jest-integration.json --runInBand",
+    "test:e2e": "jest --config ./test/jest-integration.json --runInBand --runTestsByPath ./test/sqs.integration-spec.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "jest": {
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": ".",
+    "testRegex": ".spec.ts$",
+    "transform": {"^.+\\.(t|j)s$": ["ts-jest", {"tsconfig": "tsconfig.json"}]},
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.883.0",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "dotenv": "^16.4.7",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.27",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@nestjs/schematics": "^11.0.7",
+    "@nestjs/testing": "^11.1.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.3.0",
+    "jest": "^30.1.3",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
+    "typeorm-ts-node-commonjs": "^0.3.20",
+    "typescript": "^5.9.2"
+  }
+}

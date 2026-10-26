@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-jungle}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jungle_admin_local_2026}
+      APP_DB_USER: ${APP_DB_USER:-jungle_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-jungle_app_local_2026}
+    ports: ["127.0.0.1:${POSTGRES_PORT:-5432}:5432"]
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
+      - "./docker/postgres/init:/docker-entrypoint-initdb.d:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  localstack:
+    image: localstack/localstack:4
+    environment:
+      SERVICES: sqs
+      AWS_DEFAULT_REGION: us-east-1
+      PERSISTENCE: "1"
+    ports: ["127.0.0.1:4566:4566"]
+    healthcheck:
+      test: ["CMD-SHELL", "awslocal sqs list-queues --region us-east-1 | grep -q wager-transactions.fifo && awslocal sqs list-queues --region us-east-1 | grep -q wager-events.fifo"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - "localstack-data:/var/lib/localstack"
+      - "./docker/localstack/init/ready.d:/etc/localstack/init/ready.d:ro"
+  migrate:
+    build: .
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-jungle_admin_local_2026}@postgres:5432/${POSTGRES_DB:-jungle}
+      APP_DB_USER: ${APP_DB_USER:-jungle_app}
+    depends_on:
+      postgres: { condition: service_healthy }
+    command: ["bun", "run", "migration:run"]
+  api:
+    build: .
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://${APP_DB_USER:-jungle_app}:${APP_DB_PASSWORD:-jungle_app_local_2026}@postgres:5432/${POSTGRES_DB:-jungle}
+      SQS_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      SQS_QUEUE_URL: http://localstack:4566/000000000000/wager-transactions.fifo
+      SQS_DLQ_URL: http://localstack:4566/000000000000/wager-transactions-dlq.fifo
+      SQS_EVENTS_QUEUE_URL: http://localstack:4566/000000000000/wager-events.fifo
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      localstack: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+volumes:
+  postgres-data:
+  localstack-data:
